@@ -1,3 +1,4 @@
+import sys
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -7,10 +8,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # Device configuration
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+#device = torch.device('cuda' if torch.cuda.is_available() else 'cpu') # does not work for some reason
+device = "cpu"
 
 # Hyper-parameters
-num_epochs = 1
+num_epochs = 10
 batch_size = 4
 learning_rate = 0.001
 
@@ -19,6 +21,7 @@ learning_rate = 0.001
 transform = transforms.Compose(
     [transforms.ToTensor(),
      transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+
 
 # CIFAR10: 60000 32x32 color images in 10 classes, with 6000 images per class
 train_dataset = torchvision.datasets.CIFAR10(root='./data', train=True,
@@ -33,8 +36,7 @@ train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size,
 test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size,
                                           shuffle=False)
 
-classes = ('plane', 'car', 'bird', 'cat',
-           'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
+classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
 
 def imshow(img):
@@ -51,7 +53,7 @@ images, labels = next(dataiter)
 # show images
 imshow(torchvision.utils.make_grid(images))
 
-
+# Define the network's architecture
 class ConvNet(nn.Module):
     def __init__(self):
         super(ConvNet, self).__init__()
@@ -73,10 +75,12 @@ class ConvNet(nn.Module):
         return x
 
 
-model = ConvNet().to(device)
 
+model = ConvNet().to(device)
 criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
+
+#print(model)
 
 n_total_steps = len(train_loader)
 for epoch in range(num_epochs):
@@ -107,6 +111,7 @@ with torch.no_grad():
     n_samples = 0
     n_class_correct = [0 for i in range(10)]
     n_class_samples = [0 for i in range(10)]
+
     for images, labels in test_loader:
         images = images.to(device)
         labels = labels.to(device)
